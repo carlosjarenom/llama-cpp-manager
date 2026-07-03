@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "identifier": "com.carlosjarenom.llama-manager",
   "build": {
-    "frontendDist": "src",
+    "frontendDist": "../src",
     "beforeBuildCommand": "true",
     "beforeDevCommand": "true"
   },
