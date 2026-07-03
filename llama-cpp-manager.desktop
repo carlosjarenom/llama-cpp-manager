@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=llama.cpp Model Manager
+GenericName=Model Manager
+Comment=Manage Qwen models with llama.cpp services
+Exec=/usr/bin/llama-manager
+Icon=llama-manager
+Terminal=false
+Categories=System;Development;
+Keywords=llama;cpp;qwen;ai;llm;manager;
+StartupNotify=true

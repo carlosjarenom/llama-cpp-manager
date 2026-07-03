@@ -1,0 +1,9 @@
+# Build artifacts
+src-tauri/target/
+src-tauri/Cargo.lock
+src-tauri/build
+src-tauri/tauri
+target/
+*.deb
+*.rpm
+*.AppImage

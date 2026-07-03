@@ -1,0 +1,178 @@
+/* ── Dark GNOME / Adwaita theme ──────────────────────────────────── */
+:root {
+  --bg-primary: #1a1a2e;
+  --bg-card: #16213e;
+  --bg-header: #0f0f23;
+  --text-primary: #d4d4d4;
+  --text-muted: #8888aa;
+  --border: #2a2a4a;
+  --green: #1db954;
+  --green-hover: #1ed760;
+  --red: #e0245e;
+  --red-hover: #ef4476;
+  --blue: #4a90d9;
+  --blue-hover: #5ba0e9;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: "Cantarell", "Segoe UI", system-ui, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
+header {
+  background: var(--bg-header);
+  padding: 14px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+}
+
+header h1 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+}
+
+#status-bar {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+main {
+  padding: 20px 24px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.info {
+  margin-bottom: 20px;
+}
+
+.info p {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.info code {
+  background: #252550;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+/* ── Cards ───────────────────────────────────────────────────────── */
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  transition: box-shadow 0.2s;
+}
+
+.card:hover {
+  box-shadow: 0 0 0 1px var(--border), 0 4px 16px rgba(0,0,0,0.3);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.card-icon {
+  font-size: 28px;
+  width: 40px;
+  text-align: center;
+}
+
+.card-info {
+  flex: 1;
+}
+
+.card-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.card-port {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.card-status {
+  font-size: 13px;
+  margin-bottom: 14px;
+  padding-left: 54px;
+}
+
+.card-btns {
+  display: flex;
+  gap: 8px;
+  padding-left: 54px;
+  flex-wrap: wrap;
+}
+
+.card-btns button {
+  padding: 6px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+  font-family: inherit;
+}
+
+.btn-start {
+  background: var(--green);
+  color: #fff;
+}
+.btn-start:hover:not(:disabled) { background: var(--green-hover); }
+
+.btn-stop {
+  background: var(--red);
+  color: #fff;
+}
+.btn-stop:hover:not(:disabled) { background: var(--red-hover); }
+
+.btn-restart {
+  background: var(--blue);
+  color: #fff;
+}
+.btn-restart:hover:not(:disabled) { background: var(--blue-hover); }
+
+.btn-log {
+  background: #333355;
+  color: var(--text-primary);
+}
+.btn-log:hover:not(:disabled) { background: #3f3f65; }
+
+button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+/* Separator */
+.card::after {
+  content: "";
+  display: block;
+  height: 1px;
+  background: var(--border);
+  margin: 12px -20px 0;
+}
+.card:last-child::after { display: none; }
