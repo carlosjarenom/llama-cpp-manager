@@ -23,8 +23,7 @@
     "security": {
       "csp": null
     },
-    "withGlobalTauri": true,
-    "windowsManagement": false
+    "withGlobalTauri": true
   },
   "bundle": {
     "active": true,

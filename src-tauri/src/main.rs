@@ -1,7 +1,6 @@
 #![cfg_attr(not(debug_assertions), deny(warnings))]
 
 use std::process::Command;
-use tauri::ActivationPolicy;
 
 fn run_cmd(args: &[&str]) -> (i32, String, String) {
     let output = Command::new("systemctl")
@@ -9,23 +8,31 @@ fn run_cmd(args: &[&str]) -> (i32, String, String) {
         .output();
 
     match output {
-        Ok(o) => (o.status.code().unwrap_or(-1), String::from_utf8_lossy(&o.stdout).to_string(), String::from_utf8_lossy(&o.stderr).to_string()),
-        Err(e) => (-1, "", e.to_string()),
+        Ok(o) => (
+            o.status.code().unwrap_or(-1),
+            String::from_utf8_lossy(&o.stdout).to_string(),
+            String::from_utf8_lossy(&o.stderr).to_string(),
+        ),
+        Err(e) => (-1, String::new(), e.to_string()),
     }
 }
 
 #[tauri::command]
 fn get_service_status(service: &str) -> Result<serde_json::Value, String> {
-    let (rc, out, _) = run_cmd(&["--user", "is-active", service]);
-    if rc == 0 {
-        // Check if actively running
-        let (rc2, out2, _) = run_cmd(&["--user", "show", "-p", "SubState", "--value", service]);
-        if rc2 == 0 {
-            let sub = out2.trim();
-            return Ok(serde_json::json!({ "ok": true, "status": "active", "substate": sub }));
+    let (_rc, _out, _) = run_cmd(&["--user", "is-active", service]);
+
+    let (rc2, out2, _) = run_cmd(&["--user", "show", "-p", "SubState", "--value", service]);
+    if rc2 == 0 {
+        let sub = out2.trim();
+        if sub == "running" || sub == "exited" {
+            return Ok(serde_json::json!({
+                "ok": true,
+                "status": "active",
+                "substate": sub
+            }));
         }
-        return Ok(serde_json::json!({ "ok": true, "status": "active", "substate": "running" }));
     }
+
     Ok(serde_json::json!({ "ok": true, "status": "inactive" }))
 }
 
@@ -37,7 +44,7 @@ fn execute_service_action(service: &str, action: &str) -> Result<serde_json::Val
             if rc == 0 {
                 Ok(serde_json::json!({ "ok": true, "message": "Started" }))
             } else {
-                Ok(serde_json::json!({ "ok": false, "error": err.trim() }))
+                Ok(serde_json::json!({ "ok": false, "error": err.trim().to_string() }))
             }
         }
         "stop" => {
@@ -45,30 +52,34 @@ fn execute_service_action(service: &str, action: &str) -> Result<serde_json::Val
             if rc == 0 {
                 Ok(serde_json::json!({ "ok": true, "message": "Stopped" }))
             } else {
-                Ok(serde_json::json!({ "ok": false, "error": err.trim() }))
+                Ok(serde_json::json!({ "ok": false, "error": err.trim().to_string() }))
             }
         }
         "restart" => {
-            run_cmd(&["--user", "daemon-reload"]);
+            let _ = run_cmd(&["--user", "daemon-reload"]);
             let (rc, _, err) = run_cmd(&["--user", "restart", service]);
             if rc == 0 {
                 Ok(serde_json::json!({ "ok": true, "message": "Restarted" }))
             } else {
-                Ok(serde_json::json!({ "ok": false, "error": err.trim() }))
+                Ok(serde_json::json!({ "ok": false, "error": err.trim().to_string() }))
             }
         }
-        _ => Ok(serde_json::json!({ "ok": false, "error": "Unknown action" })),
+        _ => Ok(serde_json::json!({ "ok": false, "error": "Unknown action".to_string() })),
     }
 }
 
 #[tauri::command]
 fn open_service_log(service: &str) -> Result<(), String> {
-    // Try to open a terminal and show the journal
     let terminals = ["gnome-terminal", "kitty", "alacritty", "xterm"];
     for term in &terminals {
-        if let Ok(output) = std::process::Command::new("which").arg(term).output() {
+        let output = std::process::Command::new("which").arg(term).output();
+
+        if let Ok(output) = output {
             if output.status.success() {
-                let cmd = format!("journalctl --user -u {} -f --no-pager; exec bash", service);
+                let cmd = format!(
+                    "journalctl --user -u {} -f --no-pager; exec bash",
+                    service
+                );
                 let _ = std::process::Command::new(term)
                     .args(&["bash", "-c", &cmd])
                     .spawn();
@@ -76,8 +87,16 @@ fn open_service_log(service: &str) -> Result<(), String> {
             }
         }
     }
-    // Fallback: print to stdout
-    let (rc, out, _) = run_cmd(&["--user", "journalctl", "-u", service, "-n", "50", "--no-pager"]);
+
+    let (rc, out, _) = run_cmd(&[
+        "--user",
+        "journalctl",
+        "-u",
+        service,
+        "-n",
+        "50",
+        "--no-pager",
+    ]);
     if rc == 0 {
         println!("{}", out);
     } else {

@@ -12,7 +12,7 @@ Control systemd user services: start, stop, restart, and view logs — all from 
 - **📄 Log** — Open the service journal in a terminal emulator
 - **Auto-refresh** — Status updates every 5 seconds
 - **Dark GNOME theme** — Adwaita-dark with color-coded cards
-- **Native binary** — ~15MB, no Python/runtime dependencies
+- **Native binary** — ~13MB, no Python/runtime dependencies
 
 ## Supported Models
 
