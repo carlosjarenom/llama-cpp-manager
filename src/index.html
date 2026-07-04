@@ -1,23 +1,32 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>llama.cpp Model Manager</title>
+  <title>llama.cpp Manager</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header>
-    <h1>🦙 llama.cpp Model Manager</h1>
-    <span id="status-bar">Initializing…</span>
+    <h1>🦙 llama.cpp Manager</h1>
+    <div id="status-bar">Conectando…</div>
   </header>
+
   <main>
-    <div class="info">
-      <p>Manage your Qwen models running with <code>llama.cpp</code>.
-         Click the buttons below to control each model service.</p>
-    </div>
-    <div class="cards" id="cards"></div>
+    <section id="model-cards"></section>
+
+    <section id="log-section" class="hidden">
+      <div class="log-header">
+        <h2 id="log-title">📋 Logs</h2>
+        <div class="log-actions">
+          <button id="log-refresh" class="btn-sm">↻ Refrescar</button>
+          <button id="log-close" class="btn-sm btn-close">✕</button>
+        </div>
+      </div>
+      <pre id="log-output"></pre>
+    </section>
   </main>
+
   <script src="app.js"></script>
 </body>
 </html>

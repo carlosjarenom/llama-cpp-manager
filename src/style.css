@@ -1,31 +1,38 @@
-/* ── Dark GNOME / Adwaita theme ──────────────────────────────────── */
+/* ── llama.cpp Manager — Dark theme ───────────────────────────── */
+
 :root {
-  --bg-primary: #1a1a2e;
-  --bg-card: #16213e;
-  --bg-header: #0f0f23;
-  --text-primary: #d4d4d4;
-  --text-muted: #8888aa;
-  --border: #2a2a4a;
-  --green: #1db954;
-  --green-hover: #1ed760;
-  --red: #e0245e;
-  --red-hover: #ef4476;
-  --blue: #4a90d9;
-  --blue-hover: #5ba0e9;
+  --bg:         #111118;
+  --bg-card:    #1a1a24;
+  --bg-header:  #0e0e16;
+  --border:     #2a2a3a;
+  --text:       #d0d0d8;
+  --text-dim:   #777788;
+  --green:      #22c55e;
+  --green-dim:  #163a22;
+  --red:        #ef4444;
+  --red-dim:    #3a1616;
+  --orange:     #f59e0b;
+  --orange-dim: #3a2e16;
+  --blue:       #3b82f6;
+  --blue-dim:   #16223a;
+  --radius:     10px;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  font-family: "Cantarell", "Segoe UI", system-ui, sans-serif;
-  background: var(--bg-primary);
-  color: var(--text-primary);
+  font-family: "Inter", "Cantarell", system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
   min-height: 100vh;
+  font-size: 14px;
 }
+
+/* ── Header ───────────────────────────────────────────────────── */
 
 header {
   background: var(--bg-header);
-  padding: 14px 24px;
+  padding: 12px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -33,146 +40,240 @@ header {
 }
 
 header h1 {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   color: #fff;
+  letter-spacing: -0.01em;
 }
 
 #status-bar {
   font-size: 11px;
-  color: var(--text-muted);
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
 }
 
+/* ── Main ─────────────────────────────────────────────────────── */
+
 main {
-  padding: 20px 24px;
-  max-width: 720px;
+  padding: 16px 20px;
+  max-width: 680px;
   margin: 0 auto;
 }
 
-.info {
-  margin-bottom: 20px;
-}
+/* ── Cards ────────────────────────────────────────────────────── */
 
-.info p {
-  font-size: 13px;
-  color: var(--text-muted);
-  line-height: 1.5;
-}
-
-.info code {
-  background: #252550;
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-size: 12px;
-}
-
-/* ── Cards ───────────────────────────────────────────────────────── */
-.cards {
+#model-cards {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .card {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 20px;
-  transition: box-shadow 0.2s;
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  transition: border-color 0.2s;
 }
 
 .card:hover {
-  box-shadow: 0 0 0 1px var(--border), 0 4px 16px rgba(0,0,0,0.3);
+  border-color: #3a3a50;
 }
 
-.card-header {
+.card-top {
   display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 12px;
+  align-items: flex-start;
+  gap: 12px;
 }
 
 .card-icon {
-  font-size: 28px;
-  width: 40px;
-  text-align: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
 }
 
-.card-info {
-  flex: 1;
-}
+.card-meta { flex: 1; min-width: 0; }
 
-.card-name {
-  font-size: 15px;
+.card-meta h2 {
+  font-size: 14px;
   font-weight: 600;
   color: #fff;
+  margin-bottom: 2px;
 }
 
-.card-port {
+.card-sub {
   font-size: 11px;
-  color: var(--text-muted);
-  margin-top: 2px;
+  color: var(--text-dim);
 }
 
 .card-status {
-  font-size: 13px;
-  margin-bottom: 14px;
-  padding-left: 54px;
+  text-align: right;
+  flex-shrink: 0;
+  min-width: 140px;
 }
 
-.card-btns {
+/* ── Badges ───────────────────────────────────────────────────── */
+
+.badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: 6px;
+  margin-bottom: 3px;
+}
+
+.badge.active {
+  background: var(--green-dim);
+  color: var(--green);
+}
+
+.badge.inactive {
+  background: var(--red-dim);
+  color: var(--red);
+}
+
+.badge.degraded {
+  background: var(--orange-dim);
+  color: var(--orange);
+}
+
+.badge.error {
+  background: var(--red-dim);
+  color: var(--red);
+}
+
+.status-health {
+  font-size: 10px;
+  margin-top: 2px;
+}
+
+.status-health.ok { color: var(--green); }
+.status-health.err { color: var(--red); }
+
+/* ── Model path ────────────────────────────────────────────────── */
+
+.card-path {
+  margin: 10px 0;
+  padding: 6px 10px;
+  background: #12121a;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.card-path code {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-family: "JetBrains Mono", "Cascadia Code", monospace;
+}
+
+/* ── Actions ──────────────────────────────────────────────────── */
+
+.card-actions {
   display: flex;
-  gap: 8px;
-  padding-left: 54px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
-.card-btns button {
-  padding: 6px 16px;
+.btn {
+  padding: 6px 14px;
   border: none;
   border-radius: 6px;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.15s, opacity 0.15s;
   font-family: inherit;
-}
-
-.btn-start {
-  background: var(--green);
+  transition: background 0.15s, opacity 0.15s, filter 0.15s;
   color: #fff;
 }
-.btn-start:hover:not(:disabled) { background: var(--green-hover); }
 
-.btn-stop {
-  background: var(--red);
-  color: #fff;
-}
-.btn-stop:hover:not(:disabled) { background: var(--red-hover); }
-
-.btn-restart {
-  background: var(--blue);
-  color: #fff;
-}
-.btn-restart:hover:not(:disabled) { background: var(--blue-hover); }
-
-.btn-log {
-  background: #333355;
-  color: var(--text-primary);
-}
-.btn-log:hover:not(:disabled) { background: #3f3f65; }
-
-button:disabled {
+.btn:disabled {
   opacity: 0.3;
-  cursor: default;
+  cursor: not-allowed;
+  filter: grayscale(0.5);
 }
 
-/* Separator */
-.card::after {
-  content: "";
-  display: block;
-  height: 1px;
-  background: var(--border);
-  margin: 12px -20px 0;
+.btn-start  { background: var(--green); }
+.btn-start:hover:not(:disabled) { background: #26d966; }
+
+.btn-stop  { background: var(--red); }
+.btn-stop:hover:not(:disabled) { background: #f87171; }
+
+.btn-restart  { background: var(--blue); }
+.btn-restart:hover:not(:disabled) { background: #60a5fa; }
+
+.btn-log  { background: #2a2a3a; }
+.btn-log:hover:not(:disabled) { background: #3a3a50; }
+
+/* ── Log panel ────────────────────────────────────────────────── */
+
+#log-section {
+  margin-top: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
 }
-.card:last-child::after { display: none; }
+
+#log-section.hidden { display: none; }
+
+.log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  background: #14141e;
+}
+
+.log-header h2 {
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+}
+
+.log-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-sm {
+  padding: 4px 10px;
+  border: none;
+  border-radius: 5px;
+  font-size: 11px;
+  cursor: pointer;
+  font-family: inherit;
+  background: #2a2a3a;
+  color: var(--text);
+  transition: background 0.15s;
+}
+
+.btn-sm:hover { background: #3a3a50; }
+
+.btn-close:hover { background: var(--red-dim); color: var(--red); }
+
+#log-output {
+  padding: 12px 16px;
+  font-family: "JetBrains Mono", "Cascadia Code", monospace;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--text-dim);
+  background: #0e0e16;
+  max-height: 300px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* ── Scrollbar ────────────────────────────────────────────────── */
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2a2a3a; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #3a3a50; }
