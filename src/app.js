@@ -1,6 +1,7 @@
 // ── llama.cpp Model Manager ──────────────────────────────────────
 
-const { invoke } = await import("@tauri-apps/api/core");
+// Tauri 2 with withGlobalTauri: true → use window.__TAURI__.core.invoke
+const invoke = window.__TAURI__.core.invoke;
 
 let models = [];
 let refreshTimer = null;
@@ -28,26 +29,12 @@ async function getLogs(service, lines = 50) {
   return await invoke("get_logs", { service, lines: lines ?? 50 });
 }
 
-// ── Status ───────────────────────────────────────────────────────
-
-function statusBadge(status, health) {
-  if (status === "active" && health === "ok")
-    return '<span class="badge active">● Activo</span>';
-  if (status === "active" && health === "error")
-    return '<span class="badge degraded">● Activo (sin respuesta API)</span>';
-  if (status === "inactive")
-    return '<span class="badge inactive">○ Parado</span>';
-  return '<span class="badge error">● Error</span>';
-}
-
 // ── Card rendering ───────────────────────────────────────────────
 
 function buildCard(m) {
   const div = document.createElement("div");
   div.className = "card";
   div.dataset.key = m.key;
-
-  const sizeMb = (m.model_path.length > 0) ? "" : "";
 
   div.innerHTML = `
     <div class="card-top">
@@ -59,7 +46,7 @@ function buildCard(m) {
         <div class="card-sub">Puerto ${m.port} · ${m.service}</div>
       </div>
       <div class="card-status">
-        <div class="status-badge" id="badge-${m.key}">—</div>
+        <div class="badge" id="badge-${m.key}">—</div>
         <div class="status-health" id="health-${m.key}"></div>
       </div>
     </div>
@@ -139,23 +126,37 @@ async function refreshAll() {
 
     const badgeEl = document.getElementById(`badge-${m.key}`);
     const healthEl = document.getElementById(`health-${m.key}`);
-    badgeEl.outerHTML = statusBadge(svc.status || "unknown", "");
-    badgeEl = document.getElementById(`badge-${m.key}`);
+
+    // Update badge in-place (textContent + className, no outerHTML)
+    if (svc.status === "active") {
+      badgeEl.textContent = "● Activo";
+      badgeEl.className = "badge active";
+    } else if (svc.status === "inactive") {
+      badgeEl.textContent = "○ Parado";
+      badgeEl.className = "badge inactive";
+    } else {
+      badgeEl.textContent = "● Error";
+      badgeEl.className = "badge error";
+    }
 
     // Health check (only if service is active)
     if (svc.status === "active") {
-      let hc;
       try {
-        hc = await healthCheck(m.port);
+        const hc = await healthCheck(m.port);
+        if (hc.status === "ok") {
+          healthEl.textContent = "✓ API responde";
+          healthEl.className = "status-health ok";
+        } else {
+          healthEl.textContent = `✕ API no responde (puerto ${m.port})`;
+          healthEl.className = "status-health err";
+        }
       } catch {
-        hc = { status: "error" };
+        healthEl.textContent = "✕ API no responde";
+        healthEl.className = "status-health err";
       }
-      healthEl.textContent = hc.status === "ok"
-        ? "✓ API responde"
-        : `✕ API no responde (puerto ${m.port})`;
-      healthEl.className = `status-health ${hc.status === "ok" ? "ok" : "err"}`;
     } else {
       healthEl.textContent = "";
+      healthEl.className = "status-health";
     }
 
     // Button states
@@ -185,46 +186,59 @@ async function refreshAll() {
 // ── Init ─────────────────────────────────────────────────────────
 
 async function init() {
-  await loadModels();
+  try {
+    await loadModels();
 
-  const container = document.getElementById("model-cards");
-  container.innerHTML = "";
-  for (const m of models) {
-    container.appendChild(buildCard(m));
-  }
-
-  // Delegate button clicks
-  container.addEventListener("click", async (e) => {
-    const btn = e.target.closest("button[data-action]");
-    if (btn) {
-      await doAction(btn.dataset.service, btn.dataset.action, btn.dataset.key);
-      return;
+    const container = document.getElementById("model-cards");
+    container.innerHTML = "";
+    for (const m of models) {
+      container.appendChild(buildCard(m));
     }
-    const logBtn = e.target.closest("button[data-service][data-key]:not([data-action])");
-    if (logBtn) {
-      await viewLogs(logBtn.dataset.service, logBtn.dataset.key);
-    }
-  });
 
-  // Log panel actions
-  document.getElementById("log-refresh").addEventListener("click", async () => {
-    if (logModel) {
-      const output = document.getElementById("log-output");
-      output.textContent = "Cargando…";
-      try {
-        output.textContent = await getLogs(logModel.service, 80);
-      } catch (e) {
-        output.textContent = `Error: ${e}`;
+    // Delegate button clicks
+    container.addEventListener("click", async (e) => {
+      const btn = e.target.closest("button[data-action]");
+      if (btn) {
+        await doAction(btn.dataset.service, btn.dataset.action, btn.dataset.key);
+        return;
       }
-    }
-  });
-  document.getElementById("log-close").addEventListener("click", () => {
-    document.getElementById("log-section").classList.add("hidden");
-    logModel = null;
-  });
+      const logBtn = e.target.closest("button[data-service][data-key]:not([data-action])");
+      if (logBtn) {
+        await viewLogs(logBtn.dataset.service, logBtn.dataset.key);
+      }
+    });
 
-  await refreshAll();
-  refreshTimer = setInterval(refreshAll, 5000);
+    // Log panel actions
+    document.getElementById("log-refresh").addEventListener("click", async () => {
+      if (logModel) {
+        const output = document.getElementById("log-output");
+        output.textContent = "Cargando…";
+        try {
+          output.textContent = await getLogs(logModel.service, 80);
+        } catch (e) {
+          output.textContent = `Error: ${e}`;
+        }
+      }
+    });
+    document.getElementById("log-close").addEventListener("click", () => {
+      document.getElementById("log-section").classList.add("hidden");
+      logModel = null;
+    });
+
+    await refreshAll();
+    refreshTimer = setInterval(refreshAll, 5000);
+  } catch (err) {
+    console.error("Init failed:", err);
+    document.getElementById("status-bar").textContent = `Error: ${err.message || err}`;
+    document.getElementById("status-bar").style.color = "var(--red)";
+  }
 }
 
-init();
+// Check Tauri is available before init
+if (window.__TAURI__ && window.__TAURI__.core) {
+  init();
+} else {
+  document.getElementById("status-bar").textContent = "Error: Tauri no disponible";
+  document.getElementById("status-bar").style.color = "var(--red)";
+  console.error("__TAURI__ global not found. Check withGlobalTauri in tauri.conf.json");
+}
